@@ -1,1 +1,405 @@
+<!doctype html>
 
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>USF GDSC Fall 2024 Web Development Workshop</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  codelab-ga4id=""
+                  id="docs"
+                  title="USF GDSC Fall 2024 Web Development Workshop"
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="Introduction" duration="0">
+        <p>We're gonna make AI Chatbot with Gemini API and HTML/CSS/JS !</p>
+      </google-codelab-step>
+    
+      <google-codelab-step label="Setup screen" duration="0">
+        <h2>setup HTML file</h2>
+<p>index.html</p>
+<pre><code language="language-html" class="language-html">
+    &lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title>Gemini Chatbot&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt; 
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Make HTML body" duration="0">
+        <p>index.html:</p>
+        <ol>
+          <li>add main components into to build up the page structure (2 sections: input-button + response field)</li>
+          <li>assign ids to the elements</li>
+        </ol>
+<pre><code language="language-html" class="language-html">
+&lt;header&gt;
+    &lt;h1&gt;Generative AI Chat&lt;/h1&gt;
+&lt;/header&gt;
+&lt;main&gt;
+    &lt;section&gt;
+        &lt;h2&gt;Ask a Question&lt;/h2&gt;
+        &lt;form&gt;
+            &lt;input type=&quot;text&quot; id=&quot;query&quot; placeholder=&quot;Type your question&quot;&gt;
+            &lt;button type=&quot;button&quot; id=&quot;myButton&quot;&gt;Ask&lt;/button&gt;
+        &lt;/form&gt;
+    &lt;/section&gt;
+    &lt;section&gt;
+        &lt;h2&gt;Response&lt;/h2&gt;
+        &lt;div id=&quot;response-container&quot;&gt;
+            &lt;!-- Response will be displayed here --&gt;
+        &lt;/div&gt;
+    &lt;/section&gt;
+&lt;/main&gt;
+</code></pre>
+<p>style.css:</p>
+<ol>
+  <li>create and link CSS file to HTML main page</li>
+  <li>edit CSS to format the styles of HTML elements</li>
+</ol>
+<pre><code language="language-css" class="language-css">
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1em;
+    text-align: center;
+}
+
+main {
+    padding: 1em;
+}
+
+form {
+    margin-bottom: 1em;
+}
+
+input {
+    padding: 0.5em;
+    font-size: 1em;
+}
+
+button {
+    padding: 0.5em;
+    font-size: 1em;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+#response-container {
+    border: 1px solid #ddd;
+    padding: 1em;
+    background: #f9f9f9;
+}
+</code></pre>
+
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Setup Gemini API" duration="0">
+        <h2>Install and import Gemini API</h2>
+        <ol>
+          <li>Google AI for Developers (https://ai.google.dev/)</li>
+          <li>Navigate to Docs -> Quickstart -> Web(SDK)</li>
+          <li>Install Gemini API to HTML by CDN link</li>
+<pre><code language="language-html" class="language-html">
+&lt;script type=&quot;importmap&quot;&gt;
+  {
+    &quot;imports&quot;: {
+      &quot;@google/generative-ai&quot;: &quot;https://esm.run/@google/generative-ai&quot;
+    }
+  }
+&lt;/script&gt;
+</code></pre>
+
+<li>Import Gemini API library</li>
+        
+<pre><code language="language-html" class="language-html">
+&lt;script type="module"&gt;
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    // Fetch your API_KEY
+    const API_KEY = "...";
+&lt;/script&gt;
+</code></pre>
+</ol>
+        <h2>Retrieve API Key</h2>
+        <ol>
+          <li>Navigate to Google AI Studio -> Get API Key</li>
+          <li>Select "Generative Language Client" -> Create Key</li>
+          <li>Copy Key to API_KEY (keep API_KEY secret!)</li>
+        </ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Setup structure to make the requests" duration="0">
+        <p>index.html:</p>
+        <ol>
+          <li>setup async function generate() for requests</li>
+          <li>add event listener for request command</li>
+        </ol>
+        <pre><code class="language-html" language="language-html">
+&lt;script type="module"&gt;
+    document.getElementById('myButton').addEventListener('click', generate); // Event listener
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    const API_KEY = "...";
+    const genAI = new GoogleGenerativeAI(API_KEY);
+
+    async function generate() { &lt;!-- requests function --&gt;
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+        const prompt = "Write a story about a magic backpack.";
+    
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        let text = response.text(); 
+    
+        console.log(text);
+    }
+&lt;/script&gt;
+</code></pre>
+
+<p>Test the function, it should display on the console if correct</p>
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Get users' prompts and display results" duration="0">
+        <p>index.html:</p>
+        <ol>
+          <li>modify prompt to value of id 'query'</li>
+          <li>add text to id 'response-container</li>
+        </ol>
+<pre><code class="language-html" language="language-html">
+&lt;script type="module"&gt;
+    document.getElementById('myButton').addEventListener('click', generate); // Event listener
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    const API_KEY = "...";
+    const genAI = new GoogleGenerativeAI(API_KEY);
+
+    async function generate() { &lt;!-- requests function --&gt;
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+        const prompt = document.getElementById('query').value; // Take users' inputs as prompt
+    
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        let text = response.text();
+
+        document.getElementById('response-container').innerHTML = text; // Add response to page
+        console.log(text);
+    }
+&lt;/script&gt;
+</code></pre>
+
+<p>Test the functions. It should answers users' questions and display it on the screen</p>
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Add formatting to answer" duration="0">
+<pre><code language="language-javascript" class="language-javascript">
+    text = text
+            .replace(/##\s*(.*?)\s*\n/g, "&lt;h2&gt;$1&lt;/h2&gt;&lt;br&gt;")
+            .replace(/\*\*(.*?)\*\*/g, "&lt;strong&gt;$1&lt;/strong&gt;")
+            .replace(/\n/g, "&lt;br&gt;");
+
+</code></pre>
+<p>Script:</p>
+<pre><code language="language-html" class="language-html">
+&lt;script type="module"&gt;
+    document.getElementById('myButton').addEventListener('click', generate);
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+    const API_KEY = "...";
+    const genAI = new GoogleGenerativeAI(API_KEY);
+
+    async function generate() {
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+        const prompt = document.getElementById('query').value;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        let text = response.text(); 
+
+        // Replace for proper display
+        text = text
+            .replace(/##\s*(.*?)\s*\n/g, "&lt;h2&gt;$1&lt;/h2&gt;&lt;br&gt;")
+            .replace(/\*\*(.*?)\*\*/g, "&lt;strong&gt;$1&lt;/strong&gt;")
+            .replace(/\n/g, "&lt;br&gt;");
+
+        document.getElementById('response-container').innerHTML = text;
+        console.log(text);
+    }
+&lt;/script&gt;
+</code></pre>
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="All files check" duration="0">
+        <p>index.html:</p>
+<pre><code language="language-html" class="language-html">
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Generative AI Chat&lt;/title&gt;
+    &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+    &lt;script type="importmap"&gt;
+        {
+          "imports": {
+            "@google/generative-ai": "https://esm.run/@google/generative-ai"
+          }
+        }
+    &lt;/script&gt;
+    &lt;header&gt;
+        &lt;h1&gt;Generative AI Chat&lt;/h1&gt;
+    &lt;/header&gt;
+    &lt;main&gt;
+        &lt;section id="query-section"&gt;
+            &lt;h2&gt;Ask a Question&lt;/h2&gt;
+            &lt;form id="query-form"&gt;
+                &lt;input type="text" id="query" placeholder="Type your question"&gt;
+                &lt;button type="button" id="myButton"&gt;Ask&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/section&gt;
+        &lt;section id="response-section"&gt;
+            &lt;h2&gt;Response&lt;/h2&gt;
+            &lt;div id="response-container"&gt;
+                &lt;!-- Response will be displayed here --&gt;
+            &lt;/div&gt;
+        &lt;/section&gt;
+    &lt;/main&gt;
+    &lt;script type="module"&gt;
+        document.getElementById('myButton').addEventListener('click', generate);
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+        const API_KEY = "...";
+        const genAI = new GoogleGenerativeAI(API_KEY);
+
+        async function generate() {
+            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+            const prompt = document.getElementById('query').value;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            let text = response.text(); 
+
+            // Replace newlines with &lt;br&gt; for proper display
+            text = text
+                .replace(/##\s*(.*?)\s*\n/g, "&lt;h2&gt;$1&lt;/h2&gt;&lt;br&gt;")
+                .replace(/\*\*(.*?)\*\*/g, "&lt;strong&gt;$1&lt;/strong&gt;")
+                .replace(/\n/g, "&lt;br&gt;");
+
+            document.getElementById('response-container').innerHTML = text;
+            console.log(text);
+        }
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+        
+<p>style.css:</p>
+<pre><code language="language-css" class="language-css">body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1em;
+    text-align: center;
+}
+
+main {
+    padding: 1em;
+}
+
+form {
+    margin-bottom: 1em;
+}
+
+input {
+    padding: 0.5em;
+    font-size: 1em;
+}
+
+button {
+    padding: 0.5em;
+    font-size: 1em;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+#response-container {
+    border: 1px solid #ddd;
+    padding: 1em;
+    background: #f9f9f9;
+}
+</code></pre>
+<p>Good job!!!.</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
